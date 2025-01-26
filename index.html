@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hologram Grid with Background Removal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100vw;
+      height: 100vh;
+      display: none; /* Initially hidden */
+    }
+
+    .grid-item {
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    video, canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    button {
+      background-color: #1f1f1f;
+      color: white;
+      border: 2px solid #4caf50;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #4caf50;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hologram Grid with Background Removal</h1>
+    <button id="start-camera">Start Live Camera</button>
+    <button id="upload-video">Upload Video</button>
+    <label>
+      <input type="checkbox" id="enable-bg-removal"> Enable Background Removal
+    </label>
+  </div>
+
+  <div class="grid-container" id="grid-container">
+    <div class="grid-item" id="grid-1"></div>
+    <div class="grid-item" id="grid-2"></div>
+    <div class="grid-item" id="grid-3"></div>
+    <div class="grid-item" id="grid-4"></div>
+    <div class="grid-item" id="grid-5"></div>
+    <div class="grid-item" id="grid-6"></div>
+    <div class="grid-item" id="grid-7"></div>
+    <div class="grid-item" id="grid-8"></div>
+    <div class="grid-item" id="grid-9"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const startCameraButton = document.getElementById("start-camera");
+    const uploadVideoButton = document.getElementById("upload-video");
+    const enableBgRemovalCheckbox = document.getElementById("enable-bg-removal");
+    const gridContainer = document.getElementById("grid-container");
+
+    let videoStream = null;
+    let backgroundRemovalEnabled = false;
+
+    // Function to enable camera and apply transformations
+    async function startCamera() {
+      gridContainer.style.display = "grid";
+
+      // Access live camera feed
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.createElement("video");
+        video.srcObject = videoStream;
+        video.autoplay = true;
+
+        // Apply background removal if enabled
+        if (backgroundRemovalEnabled) {
+          // Use a library like remove.bg API or custom model
+          // Placeholder code for background removal
+          console.log("Background removal applied.");
+        }
+
+        document.getElementById("grid-2").appendChild(video); // Center grid
+      } catch (error) {
+        console.error("Error accessing camera:", error);
+      }
+    }
+
+    // Event Listeners
+    startCameraButton.addEventListener("click", () => {
+      backgroundRemovalEnabled = enableBgRemovalCheckbox.checked;
+      startCamera();
+    });
+
+    uploadVideoButton.addEventListener("click", async () => {
+      const video = document.createElement("video");
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "video/*";
+
+      input.onchange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const videoURL = URL.createObjectURL(file);
+          video.src = videoURL;
+          video.autoplay = true;
+
+          document.getElementById("grid-2").appendChild(video);
+          gridContainer.style.display = "grid";
+        }
+      };
+      input.click();
+    });
+  </script>
+</body>
+</html>
